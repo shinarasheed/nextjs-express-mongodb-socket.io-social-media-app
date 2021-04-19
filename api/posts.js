@@ -4,6 +4,7 @@ const authMiddleware = require('../middleware/authMiddleware');
 const UserModel = require('../models/UserModel');
 const PostModel = require('../models/PostModel');
 const FollowerModel = require('../models/FollowerModel');
+const uuid = require('uuid').v4;
 
 //create post
 router.post('/', authMiddleware, async (req, res) => {
@@ -158,6 +159,79 @@ router.get('/like/:postId', authMiddleware, async (req, res) => {
   } catch (error) {
     console.error(error.message);
     return res.status(500).send('server error');
+  }
+});
+
+//create comment
+router.post('/comment/:postId', authMiddleware, async (req, res) => {
+  try {
+    const { postId } = req.params;
+
+    const { text } = req.body;
+
+    if (text.length < 1)
+      return res.status(400).send('Comment should be atleast one character');
+
+    const post = await PostModel.findById(postId);
+    if (!post) return res.status(404).send('post not found');
+
+    const newComment = {
+      _id: uuid(),
+      user: req.userId,
+      text,
+    };
+
+    post.comments.unshift(newComment);
+    await post.save();
+
+    return res.status(200).send('comment added');
+  } catch (error) {
+    console.error(error.message);
+    return res.status(500).send('Server error');
+  }
+});
+
+//delete comment
+router.delete('/:postId/:commentId', authMiddleware, async (req, res) => {
+  try {
+    const { commentId, postId } = req.params;
+    const { userId } = req;
+
+    const post = await PostModel.findById(postId);
+    if (!post) return res.status(404).send('post not found');
+
+    const comment = post.comments.find((comment) => comment._id === commentId);
+    if (!comment) {
+      return res.status(404).send('comment not found');
+    }
+
+    const user = await UserModel.findById(userId);
+
+    if (comment.user.toString() !== userId) {
+      if (user.role === 'root') {
+        const index = post.comments
+          .map((comment) => comment._id)
+          .indexOf(commentId);
+
+        await post.comments.splice(index, 1);
+        await post.save();
+        return res.status(200).send('comment deleted');
+      } else {
+        return res.status(403).send('unathorized');
+      }
+    }
+
+    const index = post.comments
+      .map((comment) => comment._id)
+      .indexOf(commentId);
+
+    await post.comments.splice(index, 1);
+    await post.save();
+
+    return res.status(200).send('comment deleted');
+  } catch (error) {
+    console.error(error.message);
+    res.status(500).send('server error');
   }
 });
 
