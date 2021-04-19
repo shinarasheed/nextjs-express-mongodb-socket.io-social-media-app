@@ -22,7 +22,7 @@ router.post('/', authMiddleware, async (req, res) => {
     if (picUrl) newPost.picUrl = picUrl;
 
     const post = await new PostModel(newPost).save();
-    return res.json(post);
+    return res.json(post._id);
   } catch (error) {
     console.error(error.message);
     res.status(500).send('server error');
@@ -184,7 +184,7 @@ router.post('/comment/:postId', authMiddleware, async (req, res) => {
     post.comments.unshift(newComment);
     await post.save();
 
-    return res.status(200).send('comment added');
+    return res.status(200).json(newComment._id);
   } catch (error) {
     console.error(error.message);
     return res.status(500).send('Server error');
