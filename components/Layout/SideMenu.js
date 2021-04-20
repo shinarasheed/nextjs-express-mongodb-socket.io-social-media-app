@@ -1,26 +1,24 @@
-import React from 'react';
-import { List, Icon } from 'semantic-ui-react';
-import Link from 'next/link';
-import { useRouter } from 'next/router';
-import { logoutUser } from '../../utils/authUser';
+import React from "react";
+import { List, Icon } from "semantic-ui-react";
+import Link from "next/link";
+import { useRouter } from "next/router";
+import { logoutUser } from "../../utils/authUser";
 
-const SideMenu = ({
-  user: { unreadNotification, email, unreadMessage, username },
-}) => {
+function SideMenu({ user: { unreadNotification, email, unreadMessage, username } }) {
   const router = useRouter();
 
-  const isActive = (route) => router.pathname === route;
+  const isActive = route => router.pathname === route;
+
   return (
     <>
       <List
-        style={{ paddingTop: '1rem' }}
+        style={{ paddingTop: "1rem" }}
         size="big"
         verticalAlign="middle"
-        selection
-      >
+        selection>
         <Link href="/">
-          <List.Item active={isActive('/')}>
-            <Icon name="home" size="large" color={isActive('/') && 'teal'} />
+          <List.Item active={isActive("/")}>
+            <Icon name="home" size="large" color={isActive("/") && "teal"} />
             <List.Content>
               <List.Header content="Home" />
             </List.Content>
@@ -29,12 +27,12 @@ const SideMenu = ({
         <br />
 
         <Link href="/messages">
-          <List.Item active={isActive('/messages')}>
+          <List.Item active={isActive("/messages")}>
             <Icon
-              name={unreadMessage ? 'hand point right' : 'mail outline'}
+              name={unreadMessage ? "hand point right" : "mail outline"}
               size="large"
               color={
-                (isActive('/messages') && 'teal') || (unreadMessage && 'orange')
+                (isActive("/messages") && "teal") || (unreadMessage && "orange")
               }
             />
             <List.Content>
@@ -45,13 +43,13 @@ const SideMenu = ({
         <br />
 
         <Link href="/notifications">
-          <List.Item active={isActive('/notifications')}>
+          <List.Item active={isActive("/notifications")}>
             <Icon
-              name={unreadNotification ? 'hand point right' : 'bell outline'}
+              name={unreadNotification ? "hand point right" : "bell outline"}
               size="large"
               color={
-                (isActive('/notifications') && 'teal') ||
-                (unreadNotification && 'orange')
+                (isActive("/notifications") && "teal") ||
+                (unreadNotification && "orange")
               }
             />
             <List.Content>
@@ -66,7 +64,7 @@ const SideMenu = ({
             <Icon
               name="user"
               size="large"
-              color={router.query.username === username && 'teal'}
+              color={router.query.username === username && "teal"}
             />
             <List.Content>
               <List.Header content="Account" />
@@ -84,6 +82,6 @@ const SideMenu = ({
       </List>
     </>
   );
-};
+}
 
 export default SideMenu;

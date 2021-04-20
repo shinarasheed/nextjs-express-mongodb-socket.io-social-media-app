@@ -1,18 +1,19 @@
-import React, { createRef } from 'react';
-import HeadTags from './HeadTags';
-import Navbar from './Navbar';
+import React, { createRef } from "react";
+import HeadTags from "./HeadTags";
+import Navbar from "./Navbar";
 import {
   Container,
   Visibility,
+  Grid,
   Sticky,
   Ref,
-  Segment,
-  Grid,
-} from 'semantic-ui-react';
-import nprogress from 'nprogress';
-import Router from 'next/router';
-import SideMenu from './SideMenu';
-import Search from './Search';
+  Divider,
+  Segment
+} from "semantic-ui-react";
+import nprogress from "nprogress";
+import Router from "next/router";
+import SideMenu from "./SideMenu";
+import Search from "./Search";
 
 function Layout({ children, user }) {
   const contextRef = createRef();
@@ -24,39 +25,34 @@ function Layout({ children, user }) {
   return (
     <>
       <HeadTags />
-
       {user ? (
-        <>
-          <div style={{ marginLeft: '1rem', marginRight: '1rem' }}>
-            <Ref innerRef={contextRef}>
-              <Grid>
-                <Grid.Column floated="left" width={2}>
-                  <Sticky context={contextRef}>
-                    <SideMenu user={user} />
-                  </Sticky>
-                </Grid.Column>
+        <div style={{ marginLeft: "1rem", marginRight: "1rem" }}>
+          <Ref innerRef={contextRef}>
+            <Grid>
+              <Grid.Column floated="left" width={2}>
+                <Sticky context={contextRef}>
+                  <SideMenu user={user} />
+                </Sticky>
+              </Grid.Column>
 
-                <Grid.Column>
-                  <Visibility context={contextRef} width={10}>
-                    {children}
-                  </Visibility>
-                </Grid.Column>
+              <Grid.Column width={10}>
+                <Visibility context={contextRef}>{children}</Visibility>
+              </Grid.Column>
 
-                <Grid.Column floated="left" width={4}>
-                  <Sticky context={contextRef}>
-                    <Segment basic>
-                      <Search />
-                    </Segment>
-                  </Sticky>
-                </Grid.Column>
-              </Grid>
-            </Ref>
-          </div>
-        </>
+              <Grid.Column floated="left" width={4}>
+                <Sticky context={contextRef}>
+                  <Segment basic>
+                    <Search />
+                  </Segment>
+                </Sticky>
+              </Grid.Column>
+            </Grid>
+          </Ref>
+        </div>
       ) : (
         <>
           <Navbar />
-          <Container text style={{ paddingTop: '1rem' }}>
+          <Container text style={{ paddingTop: "1rem" }}>
             {children}
           </Container>
         </>
