@@ -1,21 +1,21 @@
-import React from "react";
-import { Modal, Image, Card, Icon, Divider } from "semantic-ui-react";
-import PostComments from "./PostComments";
-import CommentInputField from "./CommentInputField";
-import calculateTime from "../../utils/calculateTime";
-import Link from "next/link";
-import { likePost } from "../../utils/postActions";
-import LikesList from "./LikesList";
+import React from 'react';
+import { Modal, Grid, Image, Card, Icon, Divider } from 'semantic-ui-react';
+import PostComments from './PostComments';
+import CommentInputField from './CommentInputField';
+import calculateTime from '../../utils/calculateTime';
+import Link from 'next/link';
+import { likePost } from '../../utils/postActions';
+import LikesList from './LikesList';
 
-function NoImageModal({
+const NoImageModal = ({
   post,
   user,
   setLikes,
   likes,
   isLiked,
   comments,
-  setComments
-}) {
+  setComments,
+}) => {
   return (
     <Card fluid>
       <Card.Content>
@@ -33,19 +33,20 @@ function NoImageModal({
 
         <Card.Description
           style={{
-            fontSize: "17px",
-            letterSpacing: "0.1px",
-            wordSpacing: "0.35px"
-          }}>
+            fontSize: '17px',
+            letterSpacing: '0.1px',
+            wordSpacing: '0.35px',
+          }}
+        >
           {post.text}
         </Card.Description>
       </Card.Content>
 
       <Card.Content extra>
         <Icon
-          name={isLiked ? "heart" : "heart outline"}
+          name={isLiked ? 'heart' : 'heart outline'}
           color="red"
-          style={{ cursor: "pointer" }}
+          style={{ cursor: 'pointer' }}
           onClick={() =>
             likePost(post._id, user._id, setLikes, isLiked ? false : true)
           }
@@ -56,7 +57,7 @@ function NoImageModal({
           trigger={
             likes.length > 0 && (
               <span className="spanLikesList">
-                {`${likes.length} ${likes.length === 1 ? "like" : "likes"}`}
+                {`${likes.length}  ${likes.length === 1 ? 'like' : 'likes'}`}
               </span>
             )
           }
@@ -66,12 +67,13 @@ function NoImageModal({
 
         <div
           style={{
-            overflow: "auto",
-            height: comments.length > 2 ? "200px" : "60px",
-            marginBottom: "8px"
-          }}>
+            overflow: 'auto',
+            height: comments.length > 2 ? '200px' : '60px',
+            marginBottom: '8px',
+          }}
+        >
           {comments.length > 0 &&
-            comments.map(comment => (
+            comments.map((comment, i) => (
               <PostComments
                 key={comment._id}
                 comment={comment}
@@ -82,10 +84,14 @@ function NoImageModal({
             ))}
         </div>
 
-        <CommentInputField postId={post._id} user={user} setComments={setComments} />
+        <CommentInputField
+          postId={post._id}
+          user={user}
+          setComments={setComments}
+        />
       </Card.Content>
     </Card>
   );
-}
+};
 
 export default NoImageModal;

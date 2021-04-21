@@ -22,7 +22,9 @@ router.post('/', authMiddleware, async (req, res) => {
     if (picUrl) newPost.picUrl = picUrl;
 
     const post = await new PostModel(newPost).save();
-    return res.json(post._id);
+
+    const postCreated = await PostModel.findById(post._id).populate('user');
+    return res.json(postCreated);
   } catch (error) {
     console.error(error.message);
     res.status(500).send('server error');
@@ -31,11 +33,27 @@ router.post('/', authMiddleware, async (req, res) => {
 
 //get all post
 router.get('/', authMiddleware, async (req, res) => {
+  const { pageNumber } = req.query;
+
+  const number = Number(pageNumber);
+  const size = 8;
   try {
-    const posts = await PostModel.find({})
-      .sort({ createdAt: -1 })
-      .populate('user')
-      .populate('commets.user');
+    let posts;
+    if (number === 1) {
+      posts = await PostModel.find({})
+        .limit(size)
+        .sort({ createdAt: -1 })
+        .populate('user')
+        .populate('commets.user');
+    } else {
+      const skips = size * (Number - 1);
+      posts = await PostModel.find({})
+        .skip(skips)
+        .limit(size)
+        .sort({ createdAt: -1 })
+        .populate('user')
+        .populate('commets.user');
+    }
     return res.json(posts);
   } catch (error) {
     console.error(error.message);

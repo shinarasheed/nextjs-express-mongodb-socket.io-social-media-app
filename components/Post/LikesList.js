@@ -1,60 +1,60 @@
-import React, { useState } from "react";
-import { List, Popup, Image } from "semantic-ui-react";
-import axios from "axios";
-import baseUrl from "../../utils/baseUrl";
-import catchErrors from "../../utils/catchErrors";
-import cookie from "js-cookie";
-import Router from "next/router";
-import { LikesPlaceHolder } from "../Layout/PlaceHolderGroup";
+import React, { useffect, useState } from 'react';
+import { List, Popup, Image } from 'semantic-ui-react';
+import axios from 'axios';
+import baseUrl from '../../utils/baseUrl';
+import catchErrors from '../../utils/catchErrors';
+import cookie from 'js-cookie';
+import Link from 'next/link';
+import { LikesPlaceHolder } from '../Layout/PlaceHolderGroup';
 
-function LikesList({ postId, trigger }) {
-  const [likesList, setLikesList] = useState([]);
+const LikesList = ({ postId, trigger }) => {
+  const [likeList, setLikeList] = useState([]);
   const [loading, setLoading] = useState(false);
 
   const getLikesList = async () => {
     setLoading(true);
     try {
+      const token = cookie.get('token');
       const res = await axios.get(`${baseUrl}/api/posts/like/${postId}`, {
-        headers: { Authorization: cookie.get("token") }
+        headers: { Authorization: token },
       });
-      setLikesList(res.data);
+      setLikeList(res.data);
     } catch (error) {
       alert(catchErrors(error));
     }
     setLoading(false);
   };
-
   return (
     <Popup
       on="click"
-      onClose={() => setLikesList([])}
+      onClose={() => setLikeList([])}
       onOpen={getLikesList}
-      popperDependencies={[likesList]}
+      popperDependencies={[LikesList]}
       trigger={trigger}
-      wide>
+      wide
+    >
       {loading ? (
         <LikesPlaceHolder />
       ) : (
         <>
-          {likesList.length > 0 && (
+          {likeList.length > 0 && (
             <div
               style={{
-                overflow: "auto",
-                maxHeight: "15rem",
-                height: "15rem",
-                minWidth: "210px"
-              }}>
+                overflow: 'auto',
+                maxHeight: '15rem',
+                height: '15rem',
+                minWidth: '210px',
+              }}
+            >
               <List selection size="large">
-                {likesList.map(like => (
+                {likeList.map((like) => (
                   <List.Item key={like._id}>
                     <Image avatar src={like.user.profilePicUrl} />
 
                     <List.Content>
-                      <List.Header
-                        onClick={() => Router.push(`/${like.user.username}`)}
-                        as="a"
-                        content={like.user.name}
-                      />
+                      <Link href={`/${like.user.username}`}>
+                        <List.Header as="a" content={like.user.name} />
+                      </Link>
                     </List.Content>
                   </List.Item>
                 ))}
@@ -65,6 +65,6 @@ function LikesList({ postId, trigger }) {
       )}
     </Popup>
   );
-}
+};
 
 export default LikesList;
