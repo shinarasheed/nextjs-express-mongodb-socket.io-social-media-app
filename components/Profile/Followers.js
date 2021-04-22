@@ -1,13 +1,18 @@
-import React, { useState, useEffect } from "react";
-import { Button, Image, List } from "semantic-ui-react";
-import Spinner from "../Layout/Spinner";
-import { NoFollowData } from "../Layout/NoData";
-import { followUser, unfollowUser } from "../../utils/profileActions";
-import axios from "axios";
-import baseUrl from "../../utils/baseUrl";
-import cookie from "js-cookie";
+import React, { useState, useEffect } from 'react';
+import { Button, Image, List } from 'semantic-ui-react';
+import Spinner from '../Layout/Spinner';
+import { NoFollowData } from '../Layout/NoData';
+import axios from 'axios';
+import baseUrl from '../../utils/baseUrl';
+import cookie from 'js-cookie';
+import { followUser, unFollowerUser } from '../../utils/profileActions';
 
-export default ({ user, loggedUserFollowStats, setUserFollowStats, profileUserId }) => {
+export default ({
+  user,
+  loggedUserFollowStats,
+  setUserFollowStats,
+  profileUserId,
+}) => {
   const [followers, setFollowers] = useState([]);
   const [loading, setLoading] = useState(false);
   const [followLoading, setFollowLoading] = useState(false);
@@ -16,13 +21,16 @@ export default ({ user, loggedUserFollowStats, setUserFollowStats, profileUserId
     const getFollowers = async () => {
       setLoading(true);
       try {
-        const res = await axios.get(`${baseUrl}/api/profile/followers/${profileUserId}`, {
-          headers: { Authorization: cookie.get("token") }
-        });
+        const res = await axios.get(
+          `${baseUrl}/api/profile/followers/${profileUserId}`,
+          {
+            headers: { Authorization: cookie.get('token') },
+          }
+        );
 
         setFollowers(res.data);
       } catch (error) {
-        alert("Error Loading Followers");
+        alert('Error Loading Followers');
       }
       setLoading(false);
     };
@@ -35,13 +43,13 @@ export default ({ user, loggedUserFollowStats, setUserFollowStats, profileUserId
       {loading ? (
         <Spinner />
       ) : followers.length > 0 ? (
-        followers.map(profileFollower => {
+        followers.map((profileFollower) => {
           /*  */
 
           const isFollowing =
             loggedUserFollowStats.following.length > 0 &&
             loggedUserFollowStats.following.filter(
-              following => following.user === profileFollower.user._id
+              (following) => following.user === profileFollower.user._id
             ).length > 0;
 
           return (
@@ -50,16 +58,22 @@ export default ({ user, loggedUserFollowStats, setUserFollowStats, profileUserId
                 <List.Content floated="right">
                   {profileFollower.user._id !== user._id && (
                     <Button
-                      color={isFollowing ? "instagram" : "twitter"}
-                      icon={isFollowing ? "check" : "add user"}
-                      content={isFollowing ? "Following" : "Follow"}
+                      color={isFollowing ? 'instagram' : 'twitter'}
+                      icon={isFollowing ? 'check' : 'add user'}
+                      content={isFollowing ? 'Following' : 'Follow'}
                       disabled={followLoading}
                       onClick={() => {
                         setFollowLoading(true);
 
                         isFollowing
-                          ? unfollowUser(profileFollower.user._id, setUserFollowStats)
-                          : followUser(profileFollower.user._id, setUserFollowStats);
+                          ? unFollowerUser(
+                              profileFollower.user._id,
+                              setUserFollowStats
+                            )
+                          : followUser(
+                              profileFollower.user._id,
+                              setUserFollowStats
+                            );
 
                         setFollowLoading(false);
                       }}

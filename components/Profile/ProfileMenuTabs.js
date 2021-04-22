@@ -1,63 +1,77 @@
-import React from "react";
-import { Menu } from "semantic-ui-react";
+import React from 'react';
+import { Menu } from 'semantic-ui-react';
 
-function ProfileMenuTabs({
+const ProfileMenuTabs = ({
   activeItem,
   handleItemClick,
   followersLength,
   followingLength,
   ownAccount,
-  loggedUserFollowStats
-}) {
+  loggedUserFollowStats,
+}) => {
   return (
-    <>
-      <Menu pointing secondary>
-        <Menu.Item
-          name="profile"
-          active={activeItem === "profile"}
-          onClick={() => handleItemClick("profile")}
-        />
+    <Menu pointing secondary>
+      <Menu.Item
+        name="profile"
+        active={activeItem === 'profile'}
+        onClick={() => handleItemClick('profile')}
+      />
 
-        <Menu.Item
-          name={`${followersLength} followers`}
-          active={activeItem === "followers"}
-          onClick={() => handleItemClick("followers")}
-        />
-
-        {ownAccount ? (
-          <>
-            <Menu.Item
-              name={`${
-                loggedUserFollowStats.following.length > 0
-                  ? loggedUserFollowStats.following.length
-                  : 0
-              } following`}
-              active={activeItem === "following"}
-              onClick={() => handleItemClick("following")}
-            />
-
-            <Menu.Item
-              name="Update Profile"
-              active={activeItem === "updateProfile"}
-              onClick={() => handleItemClick("updateProfile")}
-            />
-
-            <Menu.Item
-              name="settings"
-              active={activeItem === "settings"}
-              onClick={() => handleItemClick("settings")}
-            />
-          </>
-        ) : (
+      {ownAccount ? (
+        <>
           <Menu.Item
-            name={`${followingLength} following`}
-            active={activeItem === "following"}
-            onClick={() => handleItemClick("following")}
+            name={`${
+              loggedUserFollowStats.followers.length > 0
+                ? loggedUserFollowStats.followers.length
+                : 0
+            } Followers`}
+            active={activeItem === 'followers'}
+            onClick={() => handleItemClick('followers')}
           />
-        )}
-      </Menu>
-    </>
+
+          <Menu.Item
+            name={`${
+              loggedUserFollowStats.following.length > 0
+                ? loggedUserFollowStats.following.length
+                : 0
+            } Following`}
+            active={activeItem === 'following'}
+            onClick={() => handleItemClick('following')}
+          />
+        </>
+      ) : (
+        <>
+          <Menu.Item
+            name={`${followersLength} Followers`}
+            active={activeItem === 'followers'}
+            onClick={() => handleItemClick('followers')}
+          />
+
+          <Menu.Item
+            name={`${followingLength} Following`}
+            active={activeItem === 'following'}
+            onClick={() => handleItemClick('following')}
+          />
+        </>
+      )}
+
+      {ownAccount && (
+        <>
+          <Menu.Item
+            name="update Profile"
+            active={activeItem === 'updateProfile'}
+            onClick={() => handleItemClick('updateProfile')}
+          />
+
+          <Menu.Item
+            name="Settings"
+            active={activeItem === 'settings'}
+            onClick={() => handleItemClick('settings')}
+          />
+        </>
+      )}
+    </Menu>
   );
-}
+};
 
 export default ProfileMenuTabs;
