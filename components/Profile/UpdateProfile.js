@@ -1,18 +1,18 @@
-import React, { useState, useRef } from "react";
-import { Form, Button, Message, Divider } from "semantic-ui-react";
-import ImageDropDiv from "../Common/ImageDropDiv";
-import CommonInputs from "../Common/CommonInputs";
-import uploadPic from "../../utils/uploadPicToCloudinary";
-import { profileUpdate } from "../../utils/profileActions";
+import React, { useState, useRef } from 'react';
+import { Form, Button, Message, Divider } from 'semantic-ui-react';
+import ImageDropDiv from '../Common/ImageDropDiv';
+import CommonInputs from '../Common/CommonInputs';
+import uploadPic from '../../utils/uploadPicToCloudinary';
+import { profileUpdate } from '../../utils/profileActions';
 
 function UpdateProfile({ Profile }) {
   const [profile, setProfile] = useState({
     profilePicUrl: Profile.user.profilePicUrl,
-    bio: Profile.bio || "",
-    facebook: (Profile.social && Profile.social.facebook) || "",
-    youtube: (Profile.social && Profile.social.youtube) || "",
-    instagram: (Profile.social && Profile.social.instagram) || "",
-    twitter: (Profile.social && Profile.social.twitter) || ""
+    bio: Profile.bio || '',
+    facebook: (Profile.social && Profile.social.facebook) || '',
+    youtube: (Profile.social && Profile.social.youtube) || '',
+    instagram: (Profile.social && Profile.social.instagram) || '',
+    twitter: (Profile.social && Profile.social.twitter) || '',
   });
 
   const [errorMsg, setErrorMsg] = useState(null);
@@ -25,14 +25,14 @@ function UpdateProfile({ Profile }) {
   const [media, setMedia] = useState(null);
   const [mediaPreview, setMediaPreview] = useState(null);
 
-  const handleChange = e => {
+  const handleChange = (e) => {
     const { name, value, files } = e.target;
 
-    if (name === "media") {
+    if (name === 'media') {
       setMedia(files[0]);
       setMediaPreview(URL.createObjectURL(files[0]));
     }
-    setProfile(prev => ({ ...prev, [name]: value }));
+    setProfile((prev) => ({ ...prev, [name]: value }));
   };
 
   return (
@@ -40,7 +40,7 @@ function UpdateProfile({ Profile }) {
       <Form
         error={errorMsg !== null}
         loading={loading}
-        onSubmit={async e => {
+        onSubmit={async (e) => {
           e.preventDefault();
           setLoading(true);
 
@@ -52,7 +52,7 @@ function UpdateProfile({ Profile }) {
 
           if (media !== null && !profilePicUrl) {
             setLoading(false);
-            return setErrorMsg("Error Uploading Image");
+            return setErrorMsg('Error Uploading Image');
           }
 
           await profileUpdate(profile, setLoading, setErrorMsg, profilePicUrl);
@@ -89,7 +89,7 @@ function UpdateProfile({ Profile }) {
         <Button
           color="blue"
           icon="pencil alternate"
-          disabled={profile.bio === "" || loading}
+          disabled={profile.bio === '' || loading}
           content="Submit"
           type="submit"
         />

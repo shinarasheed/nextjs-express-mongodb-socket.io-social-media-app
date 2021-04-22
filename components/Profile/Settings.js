@@ -1,16 +1,21 @@
-import React, { useState, useEffect, useRef } from "react";
-import { List, Divider, Message, Checkbox, Form, Button } from "semantic-ui-react";
-import { passwordUpdate, toggleMessagePopup } from "../../utils/profileActions";
+import React, { useState, useEffect, useRef } from 'react';
+import {
+  List,
+  Divider,
+  Message,
+  Checkbox,
+  Form,
+  Button,
+} from 'semantic-ui-react';
+import { passwordUpdate, toggleMessagePopup } from '../../utils/profileActions';
 
 function Settings({ newMessagePopup }) {
   const [passwordFields, showPasswordFields] = useState(false);
-
+  const [popupSetting, setPopupSetting] = useState(newMessagePopup);
+  const [success, setSuccess] = useState(false);
   const [newMessageSettings, showNewMessageSettings] = useState(false);
 
   const isFirstRun = useRef(true);
-  const [popupSetting, setPopupSetting] = useState(newMessagePopup);
-
-  const [success, setSuccess] = useState(false);
 
   useEffect(() => {
     success && setTimeout(() => setSuccess(false), 3000);
@@ -53,7 +58,11 @@ function Settings({ newMessagePopup }) {
         <Divider />
 
         <List.Item>
-          <List.Icon name="paper plane outline" size="large" verticalAlign="middle" />
+          <List.Icon
+            name="paper plane outline"
+            size="large"
+            verticalAlign="middle"
+          />
 
           <List.Content>
             <List.Header
@@ -63,18 +72,21 @@ function Settings({ newMessagePopup }) {
             />
           </List.Content>
 
-          <div style={{ marginTop: "10px" }}>
-            Control whether a Popup should appear when there is a New Message or not.
-            <br />
-            <br />
-            <Checkbox
-              checked={popupSetting}
-              toggle
-              onChange={() =>
-                toggleMessagePopup(popupSetting, setPopupSetting, setSuccess)
-              }
-            />
-          </div>
+          {newMessageSettings && (
+            <div style={{ marginTop: '10px' }}>
+              Control whether a Popup should appear when there is a New Message
+              or not.
+              <br />
+              <br />
+              <Checkbox
+                checked={popupSetting}
+                toggle
+                onChange={() =>
+                  toggleMessagePopup(popupSetting, setPopupSetting, setSuccess)
+                }
+              />
+            </div>
+          )}
         </List.Item>
 
         <Divider />
@@ -88,23 +100,24 @@ const UpdatePassword = ({ setSuccess, showPasswordFields }) => {
   const [errorMsg, setError] = useState(null);
 
   const [userPasswords, setUserPasswords] = useState({
-    currentPassword: "",
-    newPassword: ""
+    currentPassword: '',
+    newPassword: '',
   });
   const [typed, showTyped] = useState({
     field1: false,
-    field2: false
+    field2: false,
   });
 
   const { field1, field2 } = typed;
 
   const { currentPassword, newPassword } = userPasswords;
 
-  const handleChange = e => {
+  const handleChange = (e) => {
     const { name, value } = e.target;
-    setUserPasswords(prev => ({ ...prev, [name]: value }));
+    setUserPasswords((prev) => ({ ...prev, [name]: value }));
   };
 
+  //this will only run after the errorMsg changes
   useEffect(() => {
     errorMsg && setTimeout(() => setError(null), 5000);
   }, [errorMsg]);
@@ -114,10 +127,11 @@ const UpdatePassword = ({ setSuccess, showPasswordFields }) => {
       <Form
         error={errorMsg !== null}
         loading={loading}
-        onSubmit={async e => {
+        onSubmit={async (e) => {
           e.preventDefault();
           setLoading(true);
 
+          //do we really need to add await again
           await passwordUpdate(setSuccess, userPasswords);
           setLoading(false);
 
@@ -129,12 +143,13 @@ const UpdatePassword = ({ setSuccess, showPasswordFields }) => {
             <Form.Input
               fluid
               icon={{
-                name: "eye",
+                name: 'eye',
                 circular: true,
                 link: true,
-                onClick: () => showTyped(prev => ({ ...prev, field1: !field1 }))
+                onClick: () =>
+                  showTyped((prev) => ({ ...prev, field1: !field1 })),
               }}
-              type={field1 ? "text" : "password"}
+              type={field1 ? 'text' : 'password'}
               iconPosition="left"
               label="Current Password"
               placeholder="Enter current Password"
@@ -146,12 +161,13 @@ const UpdatePassword = ({ setSuccess, showPasswordFields }) => {
             <Form.Input
               fluid
               icon={{
-                name: "eye",
+                name: 'eye',
                 circular: true,
                 link: true,
-                onClick: () => showTyped(prev => ({ ...prev, field2: !field2 }))
+                onClick: () =>
+                  showTyped((prev) => ({ ...prev, field2: !field2 })),
               }}
-              type={field2 ? "text" : "password"}
+              type={field2 ? 'text' : 'password'}
               iconPosition="left"
               label="New Password"
               placeholder="Enter New Password"
@@ -163,7 +179,7 @@ const UpdatePassword = ({ setSuccess, showPasswordFields }) => {
             {/* BUTTONS */}
 
             <Button
-              disabled={loading || currentPassword === "" || newPassword === ""}
+              disabled={loading || currentPassword === '' || newPassword === ''}
               compact
               icon="configure"
               type="submit"

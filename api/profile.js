@@ -181,7 +181,7 @@ router.put('/unfollow/:userToUnfollowId', authMiddleware, async (req, res) => {
   }
 });
 
-//update profile
+// UPDATE PROFILE
 router.post('/update', authMiddleware, async (req, res) => {
   try {
     const { userId } = req;
@@ -196,14 +196,18 @@ router.post('/update', authMiddleware, async (req, res) => {
     } = req.body;
 
     let profileFields = {};
-    profileFields.user = userId;
+    profileFields.user = user._id;
 
     profileFields.bio = bio;
 
     profileFields.social = {};
+
     if (facebook) profileFields.social.facebook = facebook;
+
     if (youtube) profileFields.social.youtube = youtube;
+
     if (instagram) profileFields.social.instagram = instagram;
+
     if (twitter) profileFields.social.twitter = twitter;
 
     await ProfileModel.findOneAndUpdate(
@@ -218,20 +222,20 @@ router.post('/update', authMiddleware, async (req, res) => {
       await user.save();
     }
 
-    return res.status(200).send('success');
+    return res.status(200).send('Success');
   } catch (error) {
-    console.log(error);
-    return res.status(500).send('server error');
+    console.error(error);
+    return res.status(500).send('Server Error');
   }
 });
 
-//UPDATE PASSWORD
+// UPDATE PASSWORD
 router.post('/settings/password', authMiddleware, async (req, res) => {
   try {
     const { currentPassword, newPassword } = req.body;
 
     if (newPassword.length < 6) {
-      return res.status(401).send('password must be atleast 6 characters');
+      return res.status(400).send('Password must be atleast 6 characters');
     }
 
     const user = await UserModel.findById(req.userId).select('+password');
@@ -239,38 +243,37 @@ router.post('/settings/password', authMiddleware, async (req, res) => {
     const isPassword = await bcrypt.compare(currentPassword, user.password);
 
     if (!isPassword) {
-      return res.status(400).send('invalid password');
+      return res.status(401).send('Invalid Password');
     }
 
-    const salt = await bcrypt.genSalt(10);
-
-    user.password = bcrypt.hash(newPassword, salt);
+    user.password = await bcrypt.hash(newPassword, 10);
     await user.save();
 
-    return res.status(200).send('password updated');
+    res.status(200).send('Updated successfully');
   } catch (error) {
-    console.log(error);
-    return res.status(500).send('server error');
+    console.error(error);
+    return res.status(500).send('Server Error');
   }
 });
 
-//UPDATE MESSAGE POPUP SETTINGS
+// UPDATE MESSAGE POPUP SETTINGS
 router.post('/settings/messagePopup', authMiddleware, async (req, res) => {
   try {
     const user = await UserModel.findById(req.userId);
 
     if (user.newMessagePopup) {
       user.newMessagePopup = false;
-      await user.save();
-    } else {
+    }
+    //
+    else {
       user.newMessagePopup = true;
-      await user.save();
     }
 
-    return res.status(200).send('success');
+    await user.save();
+    return res.status(200).send('updated');
   } catch (error) {
-    console.log(error);
-    return res.status(500).send('server error');
+    console.error(error);
+    return res.status(500).send('Server Error');
   }
 });
 

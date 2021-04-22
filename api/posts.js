@@ -6,12 +6,12 @@ const PostModel = require('../models/PostModel');
 const FollowerModel = require('../models/FollowerModel');
 const uuid = require('uuid').v4;
 
-//create post
+// CREATE A POST
 router.post('/', authMiddleware, async (req, res) => {
   const { text, location, picUrl } = req.body;
 
   if (text.length < 1)
-    return res.status(400).send('Text must be atleast 1 character');
+    return res.status(401).send('Text must be atleast 1 character');
 
   try {
     const newPost = {
@@ -24,115 +24,169 @@ router.post('/', authMiddleware, async (req, res) => {
     const post = await new PostModel(newPost).save();
 
     const postCreated = await PostModel.findById(post._id).populate('user');
+
     return res.json(postCreated);
   } catch (error) {
-    console.error(error.message);
-    res.status(500).send('server error');
+    console.error(error);
+    return res.status(500).send(`Server error`);
   }
 });
 
-//get all post
+// GET ALL POSTS
+
 router.get('/', authMiddleware, async (req, res) => {
   const { pageNumber } = req.query;
 
   const number = Number(pageNumber);
   const size = 8;
+
   try {
     let posts;
+
     if (number === 1) {
-      posts = await PostModel.find({})
+      posts = await PostModel.find()
         .limit(size)
         .sort({ createdAt: -1 })
         .populate('user')
-        .populate('commets.user');
-    } else {
-      const skips = size * (Number - 1);
-      posts = await PostModel.find({})
+        .populate('comments.user');
+    }
+    //
+    else {
+      const skips = size * (number - 1);
+      posts = await PostModel.find()
         .skip(skips)
         .limit(size)
         .sort({ createdAt: -1 })
         .populate('user')
-        .populate('commets.user');
+        .populate('comments.user');
     }
-    return res.json(posts);
+
+    if (posts.length === 0) {
+      return res.json([]);
+    }
+
+    let postsToBeSent = [];
+    const { userId } = req;
+
+    const loggedUser = await FollowerModel.findOne({ user: userId });
+
+    if (loggedUser.following.length === 0) {
+      postsToBeSent = posts.filter(
+        (post) => post.user._id.toString() === userId
+      );
+    }
+    //
+    else {
+      for (let i = 0; i < loggedUser.following.length; i++) {
+        const foundPostsFromFollowing = posts.filter(
+          (post) =>
+            post.user._id.toString() === loggedUser.following[i].user.toString()
+        );
+
+        if (foundPostsFromFollowing.length > 0)
+          postsToBeSent.push(...foundPostsFromFollowing);
+      }
+
+      const foundOwnPosts = posts.filter(
+        (post) => post.user._id.toString() === userId
+      );
+      if (foundOwnPosts.length > 0) postsToBeSent.push(...foundOwnPosts);
+    }
+
+    postsToBeSent.length > 0 &&
+      postsToBeSent.sort((a, b) => [
+        new Date(b.createdAt) - new Date(a.createdAt),
+      ]);
+
+    return res.json(postsToBeSent);
   } catch (error) {
-    console.error(error.message);
-    return res.status(500).send('server error');
+    console.error(error);
+    return res.status(500).send(`Server error`);
   }
 });
 
-//get post by id
-router.get('/:id', authMiddleware, async (req, res) => {
+// GET POST BY ID
+
+router.get('/:postId', authMiddleware, async (req, res) => {
   try {
-    const post = await PostModel.findById(req.params.id)
+    const post = await PostModel.findById(req.params.postId)
       .populate('user')
       .populate('comments.user');
 
     if (!post) {
       return res.status(404).send('Post not found');
     }
+
     return res.json(post);
   } catch (error) {
-    console.error(error.message);
-    return res.status(500).send('server error');
+    console.error(error);
+    return res.status(500).send(`Server error`);
   }
 });
 
-//delete post
+// DELETE POST
+
 router.delete('/:postId', authMiddleware, async (req, res) => {
-  const { userId } = req;
+  try {
+    const { userId } = req;
 
-  const { postId } = req.params;
+    const { postId } = req.params;
 
-  const post = await PostModel.findById(postId);
-  if (!post) {
-    return res.status(404).send('Post not found');
-  }
-
-  const user = await UserModel.findById(userId);
-
-  if (post.user.toString() !== userId) {
-    if (user.role === 'root') {
-      await post.remove();
-      return res.status(204).send('post deleted successfully');
-    } else {
-      return res.status(403).send('unauthorized');
+    const post = await PostModel.findById(postId);
+    if (!post) {
+      return res.status(404).send('post not found');
     }
-  }
 
-  await post.remove();
-  return res.status(204).send('post deleted successfully');
+    const user = await UserModel.findById(userId);
+
+    if (post.user.toString() !== userId) {
+      if (user.role === 'root') {
+        await post.remove();
+        return res.status(200).send('Post deleted Successfully');
+      } else {
+        return res.status(401).send('Unauthorized');
+      }
+    }
+
+    await post.remove();
+    return res.status(200).send('Post deleted Successfully');
+  } catch (error) {
+    console.error(error);
+    return res.status(500).send(`Server error`);
+  }
 });
 
-// like a post
+// LIKE A POST
+
 router.post('/like/:postId', authMiddleware, async (req, res) => {
   try {
     const { postId } = req.params;
     const { userId } = req;
 
     const post = await PostModel.findById(postId);
-
     if (!post) {
-      return res.status(404).send('post not found');
+      return res.status(404).send('No Post found');
     }
 
     const isLiked =
       post.likes.filter((like) => like.user.toString() === userId).length > 0;
 
     if (isLiked) {
-      return res.status(400).send('post already liked by you');
+      return res.status(401).send('Post already liked');
     }
 
     await post.likes.unshift({ user: userId });
     await post.save();
-    return res.status(200).send('post liked');
+
+    return res.status(200).send('Post liked');
   } catch (error) {
-    console.error(error.message);
-    return res.status(500).send('server error');
+    console.error(error);
+    return res.status(500).send(`Server error`);
   }
 });
 
-// unlike a post
+// UNLIKE A POST
+
 router.put('/unlike/:postId', authMiddleware, async (req, res) => {
   try {
     const { postId } = req.params;
@@ -140,14 +194,14 @@ router.put('/unlike/:postId', authMiddleware, async (req, res) => {
 
     const post = await PostModel.findById(postId);
     if (!post) {
-      return res.status(404).send('post not found');
+      return res.status(404).send('No Post found');
     }
 
-    const notLiked =
+    const isLiked =
       post.likes.filter((like) => like.user.toString() === userId).length === 0;
 
-    if (notLiked) {
-      return res.status(400).send('post not like yet');
+    if (isLiked) {
+      return res.status(401).send('Post not liked before');
     }
 
     const index = post.likes
@@ -155,32 +209,36 @@ router.put('/unlike/:postId', authMiddleware, async (req, res) => {
       .indexOf(userId);
 
     await post.likes.splice(index, 1);
+
     await post.save();
-    return res.status(200).send('post unliked');
+
+    return res.status(200).send('Post Unliked');
   } catch (error) {
-    console.error(error.message);
-    return res.status(500).send('server error');
+    console.error(error);
+    return res.status(500).send(`Server error`);
   }
 });
 
-//get all likes
+// GET ALL LIKES OF A POST
+
 router.get('/like/:postId', authMiddleware, async (req, res) => {
   try {
     const { postId } = req.params;
 
     const post = await PostModel.findById(postId).populate('likes.user');
     if (!post) {
-      return res.status(404).send('post not found');
+      return res.status(404).send('No Post found');
     }
 
     return res.status(200).json(post.likes);
   } catch (error) {
-    console.error(error.message);
-    return res.status(500).send('server error');
+    console.error(error);
+    return res.status(500).send(`Server error`);
   }
 });
 
-//create comment
+// CREATE A COMMENT
+
 router.post('/comment/:postId', authMiddleware, async (req, res) => {
   try {
     const { postId } = req.params;
@@ -188,68 +246,70 @@ router.post('/comment/:postId', authMiddleware, async (req, res) => {
     const { text } = req.body;
 
     if (text.length < 1)
-      return res.status(400).send('Comment should be atleast one character');
+      return res.status(401).send('Comment should be atleast 1 character');
 
     const post = await PostModel.findById(postId);
-    if (!post) return res.status(404).send('post not found');
+
+    if (!post) return res.status(404).send('Post not found');
 
     const newComment = {
       _id: uuid(),
-      user: req.userId,
       text,
+      user: req.userId,
+      date: Date.now(),
     };
 
-    post.comments.unshift(newComment);
+    await post.comments.unshift(newComment);
     await post.save();
 
     return res.status(200).json(newComment._id);
   } catch (error) {
-    console.error(error.message);
-    return res.status(500).send('Server error');
+    console.error(error);
+    return res.status(500).send(`Server error`);
   }
 });
 
-//delete comment
+// DELETE A COMMENT
+
 router.delete('/:postId/:commentId', authMiddleware, async (req, res) => {
   try {
-    const { commentId, postId } = req.params;
+    const { postId, commentId } = req.params;
     const { userId } = req;
 
     const post = await PostModel.findById(postId);
-    if (!post) return res.status(404).send('post not found');
+    if (!post) return res.status(404).send('Post not found');
 
     const comment = post.comments.find((comment) => comment._id === commentId);
     if (!comment) {
-      return res.status(404).send('comment not found');
+      return res.status(404).send('No Comment found');
     }
 
     const user = await UserModel.findById(userId);
 
+    const deleteComment = async () => {
+      const indexOf = post.comments
+        .map((comment) => comment._id)
+        .indexOf(commentId);
+
+      await post.comments.splice(indexOf, 1);
+
+      await post.save();
+
+      return res.status(200).send('Deleted Successfully');
+    };
+
     if (comment.user.toString() !== userId) {
       if (user.role === 'root') {
-        const index = post.comments
-          .map((comment) => comment._id)
-          .indexOf(commentId);
-
-        await post.comments.splice(index, 1);
-        await post.save();
-        return res.status(200).send('comment deleted');
+        await deleteComment();
       } else {
-        return res.status(403).send('unathorized');
+        return res.status(401).send('Unauthorized');
       }
     }
 
-    const index = post.comments
-      .map((comment) => comment._id)
-      .indexOf(commentId);
-
-    await post.comments.splice(index, 1);
-    await post.save();
-
-    return res.status(200).send('comment deleted');
+    await deleteComment();
   } catch (error) {
-    console.error(error.message);
-    res.status(500).send('server error');
+    console.error(error);
+    return res.status(500).send(`Server error`);
   }
 });
 
