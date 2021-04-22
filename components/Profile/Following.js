@@ -7,7 +7,8 @@ import axios from 'axios';
 import baseUrl from '../../utils/baseUrl';
 import cookie from 'js-cookie';
 
-export default ({
+//following
+const Following = ({
   user,
   loggedUserFollowStats,
   setUserFollowStats,
@@ -101,3 +102,5 @@ export default ({
     </>
   );
 };
+
+export default Following;

@@ -7,7 +7,7 @@ import baseUrl from '../../utils/baseUrl';
 import cookie from 'js-cookie';
 import { followUser, unFollowerUser } from '../../utils/profileActions';
 
-export default ({
+const Followers = ({
   user,
   loggedUserFollowStats,
   setUserFollowStats,
@@ -94,3 +94,5 @@ export default ({
     </>
   );
 };
+
+export default Followers;
