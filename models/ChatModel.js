@@ -6,14 +6,11 @@ const ChatSchema = new Schema({
 
   chats: [
     {
-      //the person this message is with
       messagesWith: { type: Schema.Types.ObjectId, ref: 'User' },
       messages: [
         {
           msg: { type: String, required: true },
-          //the sender which depends on who just sends a message
           sender: { type: Schema.Types.ObjectId, ref: 'User', required: true },
-          //depends on who just recieves a message
           receiver: {
             type: Schema.Types.ObjectId,
             ref: 'User',
