@@ -11,9 +11,18 @@ const connectDb = require('./utilsServer/connectDb');
 connectDb();
 app.use(express.json());
 const PORT = process.env.PORT || 3000;
+const { addUser, removeUser } = require('./utilsServer/roomActions');
 
 io.on('connection', (socket) => {
-  socket.on('helloword', ({}) => {});
+  socket.on('join', async ({ userId }) => {
+    const users = await addUser(userId, socket.id);
+    setInterval(() => {
+      socket.emit('connectedUsers', {
+        // send users other than the user logged in
+        users: users.filter((user) => user.userId !== userId),
+      });
+    }, 100000);
+  });
 });
 
 nextApp.prepare().then(() => {

@@ -13,6 +13,9 @@ function Messages({ chatsData }) {
   const [chats, setChats] = useState(chatsData);
   const router = useRouter();
 
+  //state to check if a user is online
+  const [connectedUsers, setConnectedUsers] = useState([]);
+
   const socket = useRef();
 
   useEffect(() => {
@@ -23,7 +26,11 @@ function Messages({ chatsData }) {
 
     //if the socket is connected
     if (socket.current) {
-      socket.current.emit('helloword', { name: 'shina', age: '32' });
+      socket.current.emit('join', { userId: user._id });
+
+      socket.current.on('connectedUsers', ({ users }) => {
+        users.length > 0 && setConnectedUsers(users);
+      });
     }
   }, []);
 
