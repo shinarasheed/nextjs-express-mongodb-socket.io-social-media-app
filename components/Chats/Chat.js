@@ -3,8 +3,14 @@ import { Divider, Comment, Icon, List } from 'semantic-ui-react';
 import { useRouter } from 'next/router';
 import calculateTime from '../../utils/calculateTime';
 
-function Chat({ chat }) {
+function Chat({ chat, deleteChat, connectedUsers }) {
   const router = useRouter();
+
+  const isOnine =
+    connectedUsers.length > 0 &&
+    connectedUsers.filter(
+      (connectedUser) => connectedUser.userId === chat.messagesWith
+    ).length > 0;
 
   return (
     <>
@@ -20,7 +26,10 @@ function Chat({ chat }) {
           <Comment>
             <Comment.Avatar src={chat.profilePicUrl} />
             <Comment.Content>
-              <Comment.Author as="a">{chat.name}</Comment.Author>
+              <Comment.Author as="a">
+                {chat.name}{' '}
+                {isOnine && <Icon name="circle" size="sm" color="green" />}{' '}
+              </Comment.Author>
 
               <Comment.Metadata>
                 <div>{calculateTime(chat.date)}</div>

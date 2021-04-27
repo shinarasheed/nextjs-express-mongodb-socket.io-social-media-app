@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Feed, Button } from 'semantic-ui-react';
 import calculateTime from '../../utils/calculateTime';
-import { followUser, unFollowerUser } from '../../utils/profileActions';
+import { followUser, unfollowUser } from '../../utils/profileActions';
 
 const FollowNotifications = ({
   notification,
@@ -40,7 +40,7 @@ const FollowNotifications = ({
               onClick={async () => {
                 setDisabled(true);
                 isFollowing
-                  ? await unFollowerUser(
+                  ? await unfollowUser(
                       notification.user._id,
                       setUserFollowStats
                     )

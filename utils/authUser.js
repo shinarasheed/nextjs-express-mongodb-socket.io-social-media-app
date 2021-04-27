@@ -1,20 +1,12 @@
-import axios from 'axios';
-import baseUrl from './baseUrl';
-import catchErrors from './catchErrors';
-import Router from 'next/router';
-import cookie from 'js-cookie';
+import axios from "axios";
+import baseUrl from "./baseUrl";
+import catchErrors from "./catchErrors";
+import Router from "next/router";
+import cookie from "js-cookie";
 
-export const registerUser = async (
-  user,
-  profilePicUrl,
-  setError,
-  setLoading
-) => {
+export const registerUser = async (user, profilePicUrl, setError, setLoading) => {
   try {
-    const res = await axios.post(`${baseUrl}/api/signup`, {
-      user,
-      profilePicUrl,
-    });
+    const res = await axios.post(`${baseUrl}/api/signup`, { user, profilePicUrl });
 
     setToken(res.data);
   } catch (error) {
@@ -46,15 +38,14 @@ export const redirectUser = (ctx, location) => {
   }
 };
 
-const setToken = (token) => {
-  cookie.set('token', token);
-  Router.push('/');
+const setToken = token => {
+  cookie.set("token", token);
+  Router.push("/");
 };
 
-//why all of these?
-export const logoutUser = (email) => {
-  cookie.set('userEmail', email);
-  cookie.remove('token');
-  Router.push('/login');
+export const logoutUser = email => {
+  cookie.set("userEmail", email);
+  cookie.remove("token");
+  Router.push("/login");
   Router.reload();
 };
