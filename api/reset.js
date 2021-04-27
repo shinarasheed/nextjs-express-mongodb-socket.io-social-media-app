@@ -40,11 +40,11 @@ router.post('/', async (req, res) => {
 
     var mailOptions = {
       to: user.email,
-      from: 'admin@socialmedia.com',
+      from: 'info@ampz.tv',
       subject: 'Hi there Password reset request',
-      html: `<p>Hey ${
-        user.modelName.split(' ')[0]
-      }, There was a request for password reset. <a href=${href}>Click this link to reset your password</a> </p>
+      html: `<p>Hey ${user.modelName
+        .split(' ')[0]
+        .toString()}, There was a request for password reset. <a href=${href}>Click this link to reset your password</a> </p>
       <p> This token is only valid for 1 hour  </p>
       `,
     };
