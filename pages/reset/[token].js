@@ -9,6 +9,8 @@ function TokenPage() {
   const router = useRouter();
 
   const [newPassword, setNewPassword] = useState({ field1: '', field2: '' });
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const { field1, field2 } = newPassword;
 
@@ -81,8 +83,13 @@ function TokenPage() {
           <Segment>
             <Form.Input
               fluid
-              icon="eye"
-              type="password"
+              icon={{
+                name: 'eye',
+                circular: true,
+                link: true,
+                onClick: () => setShowPassword(!showPassword),
+              }}
+              type={showPassword ? 'text' : 'password'}
               iconPosition="left"
               label="New Password"
               placeholder="Enter new Password"
@@ -93,8 +100,13 @@ function TokenPage() {
             />
             <Form.Input
               fluid
-              icon="eye"
-              type="password"
+              icon={{
+                name: 'eye',
+                circular: true,
+                link: true,
+                onClick: () => setShowConfirmPassword(!showConfirmPassword),
+              }}
+              type={showConfirmPassword ? 'text' : 'password'}
               iconPosition="left"
               label="Confirm Password"
               placeholder="Confirm new Password"
