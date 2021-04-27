@@ -22,7 +22,7 @@ export const followUser = async (userToFollowId, setUserFollowStats) => {
   }
 };
 
-export const unfollowUser = async (userToUnfollowId, setUserFollowStats) => {
+export const unFollowUser = async (userToUnfollowId, setUserFollowStats) => {
   try {
     await Axios.put(`/unfollow/${userToUnfollowId}`);
 

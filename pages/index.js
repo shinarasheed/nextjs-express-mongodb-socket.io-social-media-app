@@ -14,9 +14,9 @@ import {
   EndMessage,
 } from '../components/Layout/PlaceHolderGroup';
 import cookie from 'js-cookie';
-
 import getUserInfo from '../utils/getUserInfo';
-import MessageNoficationModal from '../components/MessageNotificationModal';
+import MessageNotificationModal from '../components/MessageNotificationModal';
+import newMsgSound from '../utils/newMsgSound';
 
 function Index({ user, postsData, errorLoading }) {
   const [posts, setPosts] = useState(postsData || []);
@@ -31,8 +31,6 @@ function Index({ user, postsData, errorLoading }) {
   const [newMessageModal, showNewMessageModal] = useState(false);
 
   useEffect(() => {
-    document.title = `Welcome, ${user.name.split(' ')[0]}`;
-
     if (!socket.current) {
       socket.current = io(baseUrl);
     }
@@ -40,21 +38,22 @@ function Index({ user, postsData, errorLoading }) {
     if (socket.current) {
       socket.current.emit('join', { userId: user._id });
 
-      socket.on('newMsgReceived', async ({ newMsg }) => {
+      socket.current.on('newMsgReceived', async ({ newMsg }) => {
         const { name, profilePicUrl } = await getUserInfo(newMsg.sender);
 
         if (user.newMessagePopup) {
           setNewMessageReceived({
             ...newMsg,
             senderName: name,
-            senderProfilePic,
-            profilePicUrl,
+            senderProfilePic: profilePicUrl,
           });
+          showNewMessageModal(true);
         }
+        newMsgSound(name);
       });
     }
 
-    //clean up
+    document.title = `Welcome, ${user.name.split(' ')[0]}`;
 
     return () => {
       if (socket.current) {
@@ -91,14 +90,15 @@ function Index({ user, postsData, errorLoading }) {
       {showToastr && <PostDeleteToastr />}
 
       {newMessageModal && newMessageReceived !== null && (
-        <MessageNoficationModal
+        <MessageNotificationModal
           socket={socket}
-          newMessageModal={newMessageModal}
           showNewMessageModal={showNewMessageModal}
+          newMessageModal={newMessageModal}
           newMessageReceived={newMessageReceived}
-          username={user}
+          user={user}
         />
       )}
+
       <Segment>
         <CreatePost user={user} setPosts={setPosts} />
 

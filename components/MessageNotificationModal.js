@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Form, Modal, Segment, List, Icon } from 'semantic-ui-react';
 import Link from 'next/link';
-import calculateTime from '../../utils/calculateTime';
+import calculateTime from '../utils/calculateTime';
 
 function MessageNotificationModal({
   socket,
