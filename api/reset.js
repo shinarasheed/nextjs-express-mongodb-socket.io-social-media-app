@@ -5,102 +5,93 @@ const bcrypt = require('bcryptjs');
 const nodemailer = require('nodemailer');
 const sendGridTransport = require('nodemailer-sendgrid-transport');
 const crypto = require('crypto');
-const isEmail = require('validator/lib/isEmail');
 const baseUrl = require('../utils/baseUrl');
-
+const isEmail = require('validator/lib/isEmail');
 const options = {
   auth: {
     api_key: process.env.SEND_GRID_API_KEY,
   },
 };
 
-const mailer = nodemailer.createTransport(sendGridTransport(options));
+const transporter = nodemailer.createTransport(sendGridTransport(options));
 
-//check if user exist and send email for reset password
+// CHECK USER EXISTS AND SEND EMAIL FOR RESET PASSWORD
 router.post('/', async (req, res) => {
   try {
     const { email } = req.body;
+
     if (!isEmail(email)) {
-      return res.status(400).send('enter a correct email address');
+      return res.status(401).send('Invalid Email');
     }
 
     const user = await UserModel.findOne({ email: email.toLowerCase() });
+
     if (!user) {
-      return res.status(404).send('user not found');
+      return res.status(404).send('User not found');
     }
 
     const token = crypto.randomBytes(32).toString('hex');
+
     user.resetToken = token;
-    //token is only going to be valid one hour from the time it was generated
     user.expireToken = Date.now() + 3600000;
 
     await user.save();
 
     const href = `${baseUrl}/reset/${token}`;
 
-    var mailOptions = {
+    const mailOptions = {
       to: user.email,
       from: 'info@ampz.tv',
-      subject: 'Hi there Password reset request',
-      html: `<p>Hey ${user.modelName
+      subject: 'Hi there! Password reset request',
+      html: `<p>Hey ${user.name
         .split(' ')[0]
-        .toString()}, There was a request for password reset. <a href=${href}>Click this link to reset your password</a> </p>
-      <p> This token is only valid for 1 hour  </p>
-      `,
+        .toString()}, There was a request for password reset. <a href=${href}>Click this link to reset the password </a>   </p>
+      <p>This token is valid for only 1 hour.</p>`,
     };
 
-    mailer.sendMail(mailOptions, function (err, res) {
-      if (err) {
-        console.log(err);
-      }
-      return res.status(200).send('Email sent successfully');
-    });
+    transporter.sendMail(mailOptions, (err, info) => err && console.log(err));
+
+    return res.status(200).send('Email sent successfully');
   } catch (error) {
-    console.log(error.message);
-    return res.status(500).send('server error');
+    console.error(error);
+    return res.status(500).send('Server Error');
   }
 });
 
-//verify reset password token and reset password
+// VERIFY THE TOKEN AND RESET THE PASSWORD IN DB
+
 router.post('/token', async (req, res) => {
   try {
     const { token, password } = req.body;
-    //we can instead decide to send the token as a url parameter instead of from the body
+
     if (!token) {
-      return res.status(403).send('Forbiden');
+      return res.status(401).send('Unauthorized');
     }
 
     if (password.length < 6)
-      return res
-        .status(400)
-        .send('password must be greater than six characters');
+      return res.status(401).send('Password must be atleast 6 characters');
 
     const user = await UserModel.findOne({ resetToken: token });
 
     if (!user) {
-      return res.status(404).send('user not found');
+      return res.status(404).send('User not found');
     }
-
-    //check if token has expired
 
     if (Date.now() > user.expireToken) {
-      return res.status(401).send('token expired.generate a new one');
+      return res.status(401).send('Token expired.Generate new one');
     }
 
-    const salt = await bcrypt.genSalt(10);
-
-    user.password = await bcrypt.hash(password, salt);
+    user.password = await bcrypt.hash(password, 10);
 
     user.resetToken = '';
     user.expireToken = undefined;
 
     await user.save();
 
-    return res.status(200).send('Password reseted');
-    //we can also just send my email to tell the user the password was reseted
+    return res.status(200).send('Password updated');
   } catch (error) {
-    console.log(error.message);
-    return res.status(500).send('server error');
+    console.error(error);
+    return res.status(500).send('Server Error');
   }
 });
 
